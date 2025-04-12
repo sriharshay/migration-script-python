@@ -9,12 +9,10 @@ Features:
 
 from typing import Dict, Any, List, Optional, Tuple
 from bs4 import BeautifulSoup, Tag, Comment
-import json
 from config_loader import ConfigLoader
 from aem_uploader import AEMUploader
 import re
 import requests
-from requests.auth import HTTPBasicAuth
 import logging
 import time
 import os
@@ -94,48 +92,6 @@ class HTMLComponentTransformer:
             
         return soup
 
-    def _process_images(self, soup: BeautifulSoup):
-        """Find and process all images in the HTML"""
-        for img in soup.find_all('img'):
-            original_src = img.get('src')
-            if not original_src:
-                continue
-                
-            # Download and process image
-            success, new_path = self._process_single_image(img)
-            if success:
-                img['src'] = new_path
-
-    def _process_single_image(self, img: Tag) -> Tuple[bool, str]:
-        """Process individual image tag"""
-        try:
-            # Download image
-            img_data, content_type = self._download_image(img['src'])
-            if not img_data:
-                return False, img['src']
-                
-            # Generate DAM path
-            dam_path = self._generate_dam_path(img)
-            
-            # Upload to AEM
-            success, result = self._aem_uploader.upload_asset(
-                dam_path, img_data, content_type
-            )
-            return success, result if success else img['src']
-        except Exception as e:
-            logger.error(f"Image processing failed: {str(e)}")
-            return False, img['src']
-
-    def _download_image(self, url: str) -> Tuple[Optional[bytes], Optional[str]]:
-        """Download image from source URL"""
-        try:
-            response = self._aem_uploader._retry_request('GET', url)
-            response.raise_for_status()
-            return response.content, response.headers['Content-Type']
-        except Exception as e:
-            logger.error(f"Download failed for {url}: {str(e)}")
-            return None, None
-
     def _process_and_replace_images(self, soup: BeautifulSoup):
         """Process all images and update their sources"""
         for img in soup.find_all('img'):
@@ -200,7 +156,7 @@ class HTMLComponentTransformer:
         """Download image with retry logic"""
         for _ in range(self._image_config.get('download_retries', 3)):
             try:
-                response = requests.get(url, self.aem_config.get('password'), timeout=self._image_config.get('timeout',15))
+                response = requests.get(url, timeout=self._image_config.get('timeout',15))
                 response.raise_for_status()
                 return response.content, response.headers.get('Content-Type')
             except Exception as e:
@@ -381,31 +337,31 @@ class HTMLComponentTransformer:
         return properties
 
 # Example usage
-if __name__ == "__main__":
-    html = '''
-    <div class="accordionparagraph">
-        <div class="accordion-header">Main Title</div>
-        <div class="accordion-body">
-            <div class="type_paragraph">
-                <p>Sample text with <img src="image.jpg" alt="Example"> and
-                <iframe src="https://youtube.com/embed/123"></iframe></p>
-            </div>
-            <table><tr><td>Data</td></tr></table>
-        </div>
-    </div>
-    '''
+# if __name__ == "__main__":
+#     html = '''
+#     <div class="accordionparagraph">
+#         <div class="accordion-header">Main Title</div>
+#         <div class="accordion-body">
+#             <div class="type_paragraph">
+#                 <p>Sample text with <img src="image.jpg" alt="Example"> and
+#                 <iframe src="https://youtube.com/embed/123"></iframe></p>
+#             </div>
+#             <table><tr><td>Data</td></tr></table>
+#         </div>
+#     </div>
+#     '''
     
-    transformer = HTMLComponentTransformer(html)
+#     transformer = HTMLComponentTransformer(html)
     
-    # Optional HTML manipulations
-    transformer.manipulate([
-        {
-            'action': 'remove_attributes',
-            'selector': 'div.accordion-header',
-            'params': {'attributes': ['data-old-attr']}
-        }
-    ])
+#     # Optional HTML manipulations
+#     transformer.manipulate([
+#         {
+#             'action': 'remove_attributes',
+#             'selector': 'div.accordion-header',
+#             'params': {'attributes': ['data-old-attr']}
+#         }
+#     ])
     
-    # Generate component JSON
-    component_json = transformer.to_component_json()
-    print(json.dumps(component_json, indent=2))
+#     # Generate component JSON
+#     component_json = transformer.to_component_json()
+#     print(json.dumps(component_json, indent=2))

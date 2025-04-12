@@ -33,32 +33,22 @@ class JsonResponse:
         """Special handling for title property"""
         title = self.raw_data.get('title')
         if not title:
-            title = "Untitled Article"
+            title = "Help and Support Article"
         self.processed_data['title'] = str(title)
         
     def _process_body(self):
         """HTML body processing with BeautifulSoup"""
         body = self.raw_data.get('body', '')
-        self.processed_data['body'] = body
-        """
-        soup = BeautifulSoup(body, 'html.parser')
-        self.processed_data['body'] = {
-            'element_count': len(soup.find_all()),
-            'main_tag': soup.find().name if soup.find() else None
-        }
-        """
-        # TODO: Identify the component
         transformer = HTMLComponentTransformer(body)
-
         # Optional HTML manipulations
-        transformer.manipulate([
-            {'action': 'remove_element', 'selector': 'div.old-component'},
-            {'action': 'add_attribute', 'selector': 'img', 'params': {'name': 'data-src', 'value': 'image.jpg'}}
-        ])
-
+        # transformer.manipulate([
+        #     {'action': 'remove_element', 'selector': 'div.old-component'},
+        #     {'action': 'add_attribute', 'selector': 'img', 'params': {'name': 'data-src', 'value': 'image.jpg'}}
+        # ])
         # Generate component JSON
         component_json = transformer.to_component_json()
         # print(json.dumps(component_json, indent=2))
+        self.processed_data['body'] = component_json
         
     def _process_questions(self):
         """Suggested questions processing"""
