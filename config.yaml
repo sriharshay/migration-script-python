@@ -4,6 +4,7 @@ excel:
     - "ID"
 ms:
   endpoint: "https://www.endpoint.com?dataid=<ID>&typeId=1&testName=<Name>&interfaceId=3"
+  timeout: 10
 aem:
   endpoint: "http://localhost:4502/bin/create-article.json"
   username: "admin"
