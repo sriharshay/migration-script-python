@@ -13,7 +13,7 @@ aem:
   retries: 3
 
 aem_images:
-  base_path: "/content/dam/project"
+  base_path: "/content/dam/hns-import"
   intermediate_folders: ["category", "subcategory"]
   download_retries: 1
 
