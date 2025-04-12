@@ -34,7 +34,7 @@
 
 ----------
 ## TODO
-1. Identify the component type based on elements available
-2. Extract the component data from html markup and create a component json - AEM import ready JSON (component compatible strucuture)
+1. ~~Identify the component type based on elements available~~
+2. ~~Extract the component data from html markup and create a component json - AEM import ready JSON (component compatible strucuture)~~
 3. Identify image and check how to leverage python to upload the image in dam
 4. Update the image URL and other attributes so that it will reflect the image component - AEM import ready JSON (component compatible strucuture)

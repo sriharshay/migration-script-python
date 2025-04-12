@@ -22,6 +22,8 @@ processing_rules:
     - 'alt'
     - 'href'
     - 'title'
+    - 'width'
+    - 'height'
 
 components:
   accordion:
@@ -40,6 +42,8 @@ components:
     property_map:
       src: 'img[src]'
       alt: 'img[alt]'
+      width: 'img[width]'
+      height: 'img[height]'
 
   table:
     selectors: ['table']
