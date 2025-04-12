@@ -8,3 +8,52 @@ aem:
   endpoint: "http://localhost:4502/bin/create-article.json"
   username: "un"
   password: "pwd"
+
+processing_rules:
+  max_depth: 6
+  exclude_selectors:
+    - 'div.helper-class'
+    - 'span.temporary'
+    - '[data-testid]'
+  allowed_attributes:
+    - 'class'
+    - 'id'
+    - 'src'
+    - 'alt'
+    - 'href'
+    - 'title'
+
+components:
+  accordion:
+    selectors: ['div.accordionparagraph']
+    property_map:
+      title: 'div.accordion-header label, div.accordion-header'
+      content: 'div.accordion-content'
+
+  text:
+    selectors: ['div.type_paragraph']
+    property_map:
+      content: 'self'
+
+  image:
+    selectors: ['img']
+    property_map:
+      src: 'img[src]'
+      alt: 'img[alt]'
+
+  table:
+    selectors: ['table']
+    property_map:
+      html: 'self'
+
+  video:
+    selectors: ['iframe[src*="youtube.com"]']
+    property_map:
+      embedUrl: 'iframe[src]'
+
+resource_types:
+  accordion: '/apps/my-project/components/accordion'
+  text: '/apps/my-project/components/text'
+  image: '/apps/my-project/components/image'
+  table: '/apps/my-project/components/table'
+  video: '/apps/my-project/components/video'

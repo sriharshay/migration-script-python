@@ -1,5 +1,7 @@
 from bs4 import BeautifulSoup
 from typing import List, Dict, Any
+from html_transformer import HTMLComponentTransformer
+import json
 
 class JsonResponse:
     """Class to process and transform JSON response data"""
@@ -45,6 +47,18 @@ class JsonResponse:
             'main_tag': soup.find().name if soup.find() else None
         }
         """
+        # TODO: Identify the component
+        transformer = HTMLComponentTransformer(body)
+
+        # Optional HTML manipulations
+        transformer.manipulate([
+            {'action': 'remove_element', 'selector': 'div.old-component'},
+            {'action': 'add_attribute', 'selector': 'img', 'params': {'name': 'data-src', 'value': 'image.jpg'}}
+        ])
+
+        # Generate component JSON
+        component_json = transformer.to_component_json()
+        print(json.dumps(component_json, indent=2))
         
     def _process_questions(self):
         """Suggested questions processing"""
