@@ -37,11 +37,14 @@ class JsonResponse:
     def _process_body(self):
         """HTML body processing with BeautifulSoup"""
         body = self.raw_data.get('body', '')
+        self.processed_data['body'] = body
+        """
         soup = BeautifulSoup(body, 'html.parser')
         self.processed_data['body'] = {
             'element_count': len(soup.find_all()),
             'main_tag': soup.find().name if soup.find() else None
         }
+        """
         
     def _process_questions(self):
         """Suggested questions processing"""

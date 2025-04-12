@@ -41,7 +41,7 @@ def main():
     
     # URL Generation Validation
     # print(f"Endpoint template {config.ms.get('endpoint')}")
-    for idx, excel_row in enumerate(data[:2]):
+    for idx, excel_row in enumerate(data[:3]):
         try:
             builder = URLBuilder(
                 url_template=config.ms.get('endpoint'),
