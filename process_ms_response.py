@@ -58,7 +58,7 @@ class JsonResponse:
 
         # Generate component JSON
         component_json = transformer.to_component_json()
-        print(json.dumps(component_json, indent=2))
+        # print(json.dumps(component_json, indent=2))
         
     def _process_questions(self):
         """Suggested questions processing"""

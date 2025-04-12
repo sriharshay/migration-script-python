@@ -7,10 +7,20 @@ Features:
 3. Depth limiting for component processing
 """
 
-from typing import Dict, Any, List, Optional, Union
+from typing import Dict, Any, List, Optional, Tuple
 from bs4 import BeautifulSoup, Tag, Comment
 import json
 from config_loader import ConfigLoader
+from aem_uploader import AEMUploader
+import re
+import requests
+from requests.auth import HTTPBasicAuth
+import logging
+import time
+import os
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class HTMLComponentTransformer:
     """
@@ -31,15 +41,21 @@ class HTMLComponentTransformer:
             html_markup: HTML content to process (string)
         """
         self.config = ConfigLoader()
+        self.aem_config = self.config.get('aem', {})
         self.processing_rules = self.config.get('processing_rules', {})
-        
-        # Parse and sanitize HTML upfront
-        self.soup = self._sanitize_html(
-            BeautifulSoup(html_markup, 'html.parser')
-        )
-
+        self.soup = BeautifulSoup(html_markup, 'html.parser')
+        self._aem_uploader = self._init_aem_uploader()
+        self._image_config = self.config.get('aem_images', {})
         self.component_definitions = self.config.get('components', {})
         self._current_depth = 0
+        # Parse and sanitize HTML upfront and Process images during sanitization
+        self._sanitize_html(self.soup)
+
+    def _init_aem_uploader(self):
+        """Initialize AEM upload helper if configured"""
+        if self.aem_config.get('enabled', False):
+            return AEMUploader()
+        return None
 
     def _sanitize_html(self, soup: BeautifulSoup) -> BeautifulSoup:
         """
@@ -72,7 +88,125 @@ class HTMLComponentTransformer:
                 if k in allowed_attrs
             }
 
+        # Add image processing after basic sanitization
+        if self._aem_uploader:
+            self._process_and_replace_images(soup)
+            
         return soup
+
+    def _process_images(self, soup: BeautifulSoup):
+        """Find and process all images in the HTML"""
+        for img in soup.find_all('img'):
+            original_src = img.get('src')
+            if not original_src:
+                continue
+                
+            # Download and process image
+            success, new_path = self._process_single_image(img)
+            if success:
+                img['src'] = new_path
+
+    def _process_single_image(self, img: Tag) -> Tuple[bool, str]:
+        """Process individual image tag"""
+        try:
+            # Download image
+            img_data, content_type = self._download_image(img['src'])
+            if not img_data:
+                return False, img['src']
+                
+            # Generate DAM path
+            dam_path = self._generate_dam_path(img)
+            
+            # Upload to AEM
+            success, result = self.uploader.upload_asset(
+                dam_path, img_data, content_type
+            )
+            return success, result if success else img['src']
+        except Exception as e:
+            logger.error(f"Image processing failed: {str(e)}")
+            return False, img['src']
+
+    def _download_image(self, url: str) -> Tuple[Optional[bytes], Optional[str]]:
+        """Download image from source URL"""
+        try:
+            response = self.uploader._retry_request('GET', url)
+            response.raise_for_status()
+            return response.content, response.headers['Content-Type']
+        except Exception as e:
+            logger.error(f"Download failed for {url}: {str(e)}")
+            return None, None
+
+    def _process_and_replace_images(self, soup: BeautifulSoup):
+        """Process all images and update their sources"""
+        for img in soup.find_all('img'):
+            original_src = img.get('src')
+            if not original_src:
+                continue
+
+            try:
+                # Download original image
+                img_content, content_type = self._download_image(original_src)
+                if not img_content:
+                    continue
+
+                # Generate AEM DAM path
+                dam_path = self._generate_dam_path(img)
+                
+                # Upload to AEM and update src
+                if self._aem_uploader.upload_asset(dam_path, img_content, content_type):
+                    img['src'] = dam_path
+                    logger.info(f"Updated image source to {dam_path}")
+
+            except Exception as e:
+                logger.error(f"Image processing failed: {str(e)}")
+                continue
+    
+    def _generate_dam_path(self, img: Tag) -> str:
+        """
+        Generate AEM DAM path from image metadata
+        Example Input: <img src="image.png" alt="Sample Image">
+        Example Output: /content/dam/project/sample-image.png
+        """
+        # Get configuration values
+        base_path = self._image_config.get('base_path', '/content/dam/project')
+        # intermediate_folders = self._image_config.get('intermediate_folders', [])
+        intermediate_folders = []
+        
+        # Extract source filename components
+        original_src = img.get('src', '')
+        src_basename = os.path.basename(original_src)
+        src_name, src_ext = os.path.splitext(src_basename)
+        
+        # Determine base name from alt text or source filename
+        alt_text = img.get('alt', '')
+        base_name = self._sanitize_filename(alt_text) if alt_text \
+                    else self._sanitize_filename(src_name)
+        
+        # Construct full filename with original extension
+        filename = f"{base_name}{src_ext.lower()}"
+        
+        # Build full DAM path
+        path_components = [base_path.strip('/')] + intermediate_folders + [filename]
+        return '/' + '/'.join(path_components)
+
+    @staticmethod
+    def _sanitize_filename(name: str) -> str:
+        """Convert to kebab-case filename with extension"""
+        name = re.sub(r'[^a-zA-Z0-9\s-]', '', name)
+        name = re.sub(r'[\s_]+', '-', name).lower()
+        return f"{name[:150]}"  # Truncate long filenames
+
+    def _download_image(self, url: str) -> Tuple[Optional[bytes], Optional[str]]:
+        """Download image with retry logic"""
+        for _ in range(self._image_config.get('download_retries', 3)):
+            try:
+                response = requests.get(url, self.aem_config.get('password'), timeout=10)
+                response.raise_for_status()
+                return response.content, response.headers.get('Content-Type')
+            except Exception as e:
+                logger.warning(f"Retrying image download: {str(e)}")
+                time.sleep(1)
+        return None, None
 
     def manipulate(self, actions: List[Dict]) -> None:
         """

@@ -6,8 +6,16 @@ ms:
   endpoint: "https://www.endpoint.com?dataid=<ID>&typeId=1&testName=<Name>&interfaceId=3"
 aem:
   endpoint: "http://localhost:4502/bin/create-article.json"
-  username: "un"
-  password: "pwd"
+  username: "admin"
+  password: "admin"
+  enabled: true
+  base_url: "http://localhost:4502"
+  retries: 3
+
+aem_images:
+  base_path: "/content/dam/project"
+  intermediate_folders: ["category", "subcategory"]
+  download_retries: 1
 
 processing_rules:
   max_depth: 6
