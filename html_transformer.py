@@ -19,7 +19,7 @@ import logging
 import time
 import os
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class HTMLComponentTransformer:
@@ -118,7 +118,7 @@ class HTMLComponentTransformer:
             dam_path = self._generate_dam_path(img)
             
             # Upload to AEM
-            success, result = self.uploader.upload_asset(
+            success, result = self._aem_uploader.upload_asset(
                 dam_path, img_data, content_type
             )
             return success, result if success else img['src']
@@ -129,7 +129,7 @@ class HTMLComponentTransformer:
     def _download_image(self, url: str) -> Tuple[Optional[bytes], Optional[str]]:
         """Download image from source URL"""
         try:
-            response = self.uploader._retry_request('GET', url)
+            response = self._aem_uploader._retry_request('GET', url)
             response.raise_for_status()
             return response.content, response.headers['Content-Type']
         except Exception as e:
@@ -200,7 +200,7 @@ class HTMLComponentTransformer:
         """Download image with retry logic"""
         for _ in range(self._image_config.get('download_retries', 3)):
             try:
-                response = requests.get(url, self.aem_config.get('password'), timeout=10)
+                response = requests.get(url, self.aem_config.get('password'), timeout=self._image_config.get('timeout',15))
                 response.raise_for_status()
                 return response.content, response.headers.get('Content-Type')
             except Exception as e:

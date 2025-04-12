@@ -31,12 +31,13 @@ class ResponseFromMS:
         """Execute the request and process response"""
         for attempt in range(self.retries + 1):
             try:
-                response = requests.get(
-                    url=self.url,
-                    timeout=self.timeout,
-                    headers=self.headers,
+                response = requests.request(
+                    'GET', 
+                    url=self.url, 
+                    timeout=self.timeout, 
+                    headers=self.headers, 
                     auth=self.auth
-                )
+                    )
                 return self._process_response(response)
 
             except requests.exceptions.RequestException as e:

@@ -12,11 +12,13 @@ aem:
   base_url: "http://localhost:4502"
   retries: 1
   retry_delay: 3
+  timeout: 10
 
 aem_images:
   base_path: "/content/dam/hns-import"
   intermediate_folders: ["category", "subcategory"]
   download_retries: 1
+  timeout: 10
 
 processing_rules:
   max_depth: 6
