@@ -10,7 +10,7 @@ aem:
   password: "admin"
   enabled: true
   base_url: "http://localhost:4502"
-  retries: 3
+  retries: 1
 
 aem_images:
   base_path: "/content/dam/hns-import"
