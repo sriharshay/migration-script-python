@@ -163,7 +163,7 @@ class HTMLComponentTransformer:
                 response.raise_for_status()
                 return response.content, response.headers.get('Content-Type')
             except Exception as e:
-                logger.warning(f"Retry {attempt+1}/{self.retries} for {url}: error {str(e)}")
+                logger.warning(f"Retry {attempt+1}/{retries} for {url}: error {str(e)}")
                 time.sleep(retry_delay)
         return None, None
 
