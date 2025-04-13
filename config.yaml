@@ -15,7 +15,7 @@ aem:
   base_url: "http://localhost:4502"
   retries: 0 # AEM Image Upload
   timeout: 10 # AEM Image Upload
-  retry_delay: # AEM Image Upload
+  retry_delay: 1 # AEM Image Upload
 
 aem_images:
   base_path: "/content/dam/hns-import"
