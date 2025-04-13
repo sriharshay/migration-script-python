@@ -4,7 +4,10 @@ excel:
     - "ID"
 ms:
   endpoint: "https://www.endpoint.com?dataid=<ID>&typeId=1&testName=<Name>&interfaceId=3"
-  timeout: 10
+  retries: 1 # Microservice 
+  timeout: 10 # Microservice
+  retry_delay: 1 # Microservice
+
 aem:
   endpoint: "http://localhost:4502/bin/create-article.json"
   username: "admin"
@@ -12,14 +15,15 @@ aem:
   enabled: true
   base_url: "http://localhost:4502"
   retries: 1
-  retry_delay: 3
   timeout: 10
+  retry_delay: 1
 
 aem_images:
   base_path: "/content/dam/hns-import"
   intermediate_folders: ["category", "subcategory"]
-  download_retries: 1
-  timeout: 10
+  retries: 1 #Download the images from MS
+  timeout: 10 #Download the images from MS
+  retry_delay: 1 #Download the images from MS
 
 processing_rules:
   max_depth: 6

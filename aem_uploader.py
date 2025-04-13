@@ -5,13 +5,11 @@ Handles image processing and upload to AEM DAM with folder structure management
 """
 
 import os
-import re
 import time
 import requests
 import logging
-from typing import Dict, Optional, Tuple
+from typing import Tuple
 from urllib.parse import urlparse
-from bs4 import BeautifulSoup, Tag
 from config_loader import ConfigLoader
 from requests.auth import HTTPBasicAuth       
 
@@ -36,7 +34,7 @@ class AEMUploader:
             'Cookie': 'cq-authoring-mode=TOUCH'
         }
         self.retries = self.aem_config.get('retries', 3)
-        self.timeout = self.aem_config.get('timeout', 10)
+        self.timeout = self.aem_config.get('timeout', 15)
         self.retry_delay = self.aem_config.get('retry_delay', 5)
 
     def create_folder(self, folder_path: str) -> bool:
@@ -123,8 +121,8 @@ class AEMUploader:
 
     def _retry_request(self, method: str, url: str, **kwargs) -> requests.Response:
         """Retry wrapper for HTTP requests"""
-        for attempt in range(self.retries):
-            response = requests.request(method, url, auth=HTTPBasicAuth(self.aem_config['username'], self.aem_config['password']), timeout=self.timeout, **kwargs)
+        for attempt in range(self.retries + 1):
+            response = requests.request(method, url, auth=HTTPBasicAuth(self.aem_config['username'], self.aem_config['password']), **kwargs)
             if response.status_code < 500:
                 return response
             logger.warning(f"Retry {attempt+1}/{self.retries} for {url}")

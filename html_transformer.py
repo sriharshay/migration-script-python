@@ -154,14 +154,17 @@ class HTMLComponentTransformer:
 
     def _download_image(self, url: str) -> Tuple[Optional[bytes], Optional[str]]:
         """Download image with retry logic"""
-        for _ in range(self._image_config.get('download_retries', 3)):
+        retries = self._image_config.get('retries', 3)
+        timeout = self._image_config.get('timeout', 15)
+        retry_delay = self._image_config.get('retry_delay', 3)
+        for attempt in range(retries + 1):
             try:
-                response = requests.get(url, timeout=self._image_config.get('timeout',15))
+                response = requests.get(url, timeout=timeout)
                 response.raise_for_status()
                 return response.content, response.headers.get('Content-Type')
             except Exception as e:
-                logger.warning(f"Retrying image download: {str(e)}")
-                time.sleep(1)
+                logger.warning(f"Retry {attempt+1}/{self.retries} for {url}: error {str(e)}")
+                time.sleep(retry_delay)
         return None, None
 
     def manipulate(self, actions: List[Dict]) -> None:

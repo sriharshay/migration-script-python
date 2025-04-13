@@ -54,6 +54,7 @@ def main():
                 response = ResponseFromMS(
                     url=url,
                     timeout=config.ms.get('timeout'),
+                    retries=config.ms.get('retries'),
                     headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
                 ).execute()
                 # print(f"Response: {response}")

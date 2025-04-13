@@ -1,13 +1,18 @@
 import requests
 import json
 import time
+import logging
 from typing import Dict, Any
+from config_loader import ConfigLoader
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class ResponseFromMS:
     """Class to handle HTTP requests and response processing"""
     
     def __init__(self, url: str, timeout: int = 10, headers: Dict[str, str] = None, 
-                 auth: tuple = None, retries: int = 3):
+                 retries: int = 3):
         """
         Initialize the URL fetcher
         
@@ -17,10 +22,10 @@ class ResponseFromMS:
         :param auth: Optional authentication tuple (username, password)
         :param retries: Number of retry attempts for failed requests (default: 3)
         """
+        self.ms = ConfigLoader().ms
         self.url = url
         self.timeout = timeout
         self.headers = headers or {}
-        self.auth = auth
         self.retries = retries
         self.result = {
             'statusCode': 500,
@@ -29,23 +34,18 @@ class ResponseFromMS:
 
     def execute(self) -> Dict[str, Any]:
         """Execute the request and process response"""
-        for attempt in range(self.retries + 1):
+        retries = self.ms.get('retries', 3)
+        timeout = self.ms.get('timeout', 15)
+        retry_delay = self.ms.get('retry_delay', 3)
+        for attempt in range(retries + 1):
             try:
-                response = requests.request(
-                    'GET', 
-                    url=self.url, 
-                    timeout=self.timeout, 
-                    headers=self.headers, 
-                    auth=self.auth
-                    )
+                response = requests.request('GET', url=self.url, timeout=timeout)
                 return self._process_response(response)
-
             except requests.exceptions.RequestException as e:
-                if attempt == self.retries:
+                if attempt == retries:
                     return self._handle_error(e)
-                print(f"Attempt {attempt + 1} failed. Retrying...")
-                time.sleep(1)  # Simple backoff
-
+                logger.warning(f"Retry {attempt+1}/{retries} for {self.url}: error {str(e)}")
+                time.sleep(retry_delay)
         return self.result
 
     def _process_response(self, response: requests.Response) -> Dict[str, Any]:
