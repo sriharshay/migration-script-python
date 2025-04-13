@@ -1,7 +1,5 @@
-from bs4 import BeautifulSoup
 from typing import List, Dict, Any
 from html_transformer import HTMLComponentTransformer
-import json
 
 class JsonResponse:
     """Class to process and transform JSON response data"""

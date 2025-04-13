@@ -1,6 +1,6 @@
 import requests
-from typing import Union, Dict, Any
 import json
+from typing import Union, Dict, Any
 from time import time
 from requests.auth import HTTPBasicAuth
 

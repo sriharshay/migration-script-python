@@ -7,15 +7,15 @@ Features:
 3. Depth limiting for component processing
 """
 
-from typing import Dict, Any, List, Optional, Tuple
-from bs4 import BeautifulSoup, Tag, Comment
-from config_loader import ConfigLoader
-from aem_uploader import AEMUploader
 import re
 import requests
 import logging
 import time
 import os
+from typing import Dict, Any, List, Optional, Tuple
+from bs4 import BeautifulSoup, Tag, Comment
+from config_loader import ConfigLoader
+from aem_uploader import AEMUploader
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

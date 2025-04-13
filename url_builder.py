@@ -1,7 +1,7 @@
 import re
-import pandas as pd
 import yaml
 import time
+import pandas as pd
 
 class URLBuilder:
     def __init__(self, url_template, excel_row):

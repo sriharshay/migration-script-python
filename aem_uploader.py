@@ -9,7 +9,6 @@ import time
 import requests
 import logging
 from typing import Tuple
-from urllib.parse import urlparse
 from config_loader import ConfigLoader
 from requests.auth import HTTPBasicAuth       
 
