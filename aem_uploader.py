@@ -28,14 +28,11 @@ class AEMUploader:
     """
     
     def __init__(self):
-        self.aem_config = ConfigLoader().get('aem', {})
-        self.base_url = self.aem_config.get('base_url', 'http://localhost:4502')
+        self.aem = ConfigLoader().get('aem', {})
+        self.base_url = self.aem.get('base_url', 'http://localhost:4502')
         self.headers = {
             'Cookie': 'cq-authoring-mode=TOUCH'
         }
-        self.retries = self.aem_config.get('retries', 3)
-        self.timeout = self.aem_config.get('timeout', 15)
-        self.retry_delay = self.aem_config.get('retry_delay', 5)
 
     def create_folder(self, folder_path: str) -> bool:
         """
@@ -121,10 +118,16 @@ class AEMUploader:
 
     def _retry_request(self, method: str, url: str, **kwargs) -> requests.Response:
         """Retry wrapper for HTTP requests"""
-        for attempt in range(self.retries + 1):
-            response = requests.request(method, url, auth=HTTPBasicAuth(self.aem_config['username'], self.aem_config['password']), **kwargs)
-            if response.status_code < 500:
-                return response
-            logger.warning(f"Retry {attempt+1}/{self.retries} for {url}")
-            time.sleep(self.retry_delay)
+        auth = HTTPBasicAuth(self.aem['username'], self.aem['password'])
+        retries = self.aem.get('retries', 3)
+        timeout = self.aem.get('timeout', 15)
+        retry_delay = self.aem.get('retry_delay', 5)
+        for attempt in range(retries + 1):
+            try:
+                response = requests.request(method, url, timeout=timeout, auth=auth, **kwargs)
+                if response.status_code in (200, 201):
+                    return response
+            except requests.exceptions.RequestException as e:
+                logger.warning(f"Retry {attempt+1}/{retries} for {url}: error {str(e)}")
+                time.sleep(retry_delay)
         return response
