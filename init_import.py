@@ -60,18 +60,18 @@ def main():
                 # print(f"Response: {response}")
                 handler = MSResponseHandler(response)
                 processed_response = handler.get_processed_json()
-                # print(f"processed response {processed_response}")
-                try:
-                    aem_repsonse = AEMConnector(
-                        endpoint_url=config.aem.get('endpoint'),
-                        username=config.aem.get('username'),
-                        password=config.aem.get('password'),
-                        payload=processed_response
-                    ).connect()
-                    print(f"AEM response {aem_repsonse}")
-                except Exception as e:
-                    print(f"\n❌ CreatePageHandler failed: {str(e)}")
-                    pass
+                print(f"processed response {processed_response}")
+                # try:
+                #     aem_repsonse = AEMConnector(
+                #         endpoint_url=config.aem.get('endpoint'),
+                #         username=config.aem.get('username'),
+                #         password=config.aem.get('password'),
+                #         payload=processed_response
+                #     ).connect()
+                #     print(f"AEM response {aem_repsonse}")
+                # except Exception as e:
+                #     print(f"\n❌ CreatePageHandler failed: {str(e)}")
+                #     pass
             except Exception as e:
                 print(f"\n❌ ResponseFromMS failed: {str(e)}")
                 pass

@@ -247,7 +247,8 @@ class HTMLComponentTransformer:
         Returns:
             dict: Component hierarchy in AEM JSON format
         """
-        return self._process_element(self.soup, depth=0)
+        # return self._process_element(self.soup, depth=0)
+        return self.soup
 
     def _process_element(
         self, 

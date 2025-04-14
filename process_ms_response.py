@@ -38,15 +38,8 @@ class JsonResponse:
         """HTML body processing with BeautifulSoup"""
         body = self.raw_data.get('body', '')
         transformer = HTMLComponentTransformer(body)
-        # Optional HTML manipulations
-        # transformer.manipulate([
-        #     {'action': 'remove_element', 'selector': 'div.old-component'},
-        #     {'action': 'add_attribute', 'selector': 'img', 'params': {'name': 'data-src', 'value': 'image.jpg'}}
-        # ])
-        # Generate component JSON
         component_json = transformer.to_component_json()
-        # print(json.dumps(component_json, indent=2))
-        self.processed_data['body'] = component_json
+        self.processed_data['body'] = str(component_json)
         
     def _process_questions(self):
         """Suggested questions processing"""

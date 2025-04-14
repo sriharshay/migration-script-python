@@ -1,7 +1,11 @@
 import re
 import yaml
 import time
+import logging
 import pandas as pd
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 class URLBuilder:
     def __init__(self, url_template, excel_row):
