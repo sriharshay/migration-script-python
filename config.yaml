@@ -1,5 +1,5 @@
 excel:
-  file_path: "excel.xlsx"
+  file_path: "data.xlsm"
   columns:
     - "ID"
 ms:
@@ -9,7 +9,7 @@ ms:
   retry_delay: 1 # Microservice call
 
 aem:
-  endpoint: "http://localhost:4502/bin/create-article.json"
+  endpoint: "http://localhost:4502/bin/import.json"
   username: "admin"
   password: "admin"
   enabled: true
@@ -19,7 +19,7 @@ aem:
   retry_delay: 1 # AEM Image Upload
 
 aem_images:
-  base_path: "/content/dam/hns-import"
+  base_path: "/content/dam/import/migration"
   intermediate_folders: ["category", "subcategory"]
   retries: 0 # Download the cached images from S3
   timeout: 10 # Download the cached images from S3

@@ -1,4 +1,8 @@
+import logging
 import pandas as pd
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class ExcelDataHandler:
     def __init__(self, file_path, columns):

@@ -11,6 +11,7 @@ import logging
 from typing import Dict, Any, Optional
 from pathlib import Path
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class ConfigLoader:

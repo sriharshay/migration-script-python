@@ -1,5 +1,9 @@
+import logging
 from typing import List, Dict, Any
 from html_transformer import HTMLComponentTransformer
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class JsonResponse:
     """Class to process and transform JSON response data"""

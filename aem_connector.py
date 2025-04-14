@@ -1,8 +1,12 @@
 import requests
 import json
+import logging
 from typing import Union, Dict, Any
 from time import time
 from requests.auth import HTTPBasicAuth
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class AEMConnector:
     """
