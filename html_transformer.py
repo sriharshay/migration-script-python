@@ -159,7 +159,7 @@ class HTMLComponentTransformer:
         retry_delay = self._image_config.get('retry_delay', 3)
         for attempt in range(retries + 1):
             try:
-                response = requests.get(url, timeout=timeout)
+                response = requests.get(url, timeout=timeout, stream=True)
                 response.raise_for_status()
                 return response.content, response.headers.get('Content-Type')
             except Exception as e:

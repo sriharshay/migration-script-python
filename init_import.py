@@ -38,8 +38,9 @@ def main():
         validate_data(data, excel_columns)
         print("\n✅ Excel data validation successful!")
         print(f"   Found {len(data)} rows")
-        data = data[:4]
-        records = len(data[:4])
+        allowed_count = 1
+        data = data[:allowed_count]
+        records = len(data)
         print(f"   Process only {records} rows")
         # print(f"   First row sample: {data[:5]}")
     except Exception as e:
