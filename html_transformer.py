@@ -111,7 +111,7 @@ class HTMLComponentTransformer:
                 # Upload to AEM and update src
                 if self._aem_uploader.upload_asset(dam_path, img_content, content_type):
                     img['src'] = dam_path
-                    # logger.info(f"Replaced the old image {original_src} source with new image {dam_path}")
+                    logger.info(f"Replaced the old image {original_src} source with new image {dam_path}")
 
             except Exception as e:
                 logger.error(f"Image processing failed: {str(e)}")
