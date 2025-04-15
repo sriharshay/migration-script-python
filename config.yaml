@@ -13,7 +13,7 @@ aem:
   endpoint: "/bin/import.json"
   username: "admin"
   password: "admin"
-  enable_img_processing: False # Enable or disable the image processing and upload to the DAM. Values can be either True or False
+  enable_img_processing: True # Enable or disable the image processing and upload to the DAM. Values can be either True or False
   retries: 0 # AEM Image Upload
   timeout: 10 # AEM Image Upload
   retry_delay: 1 # AEM Image Upload
