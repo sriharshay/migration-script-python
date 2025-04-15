@@ -13,7 +13,7 @@ aem:
   endpoint: "/bin/import.json"
   username: "admin"
   password: "admin"
-  enable_img_processing: True # Enable or disable the image processing and upload to the DAM. Values can be either True or False
+  enable_img_processing: False # Enable or disable the image processing and upload to the DAM. Values can be either True or False
   retries: 0 # AEM Image Upload
   timeout: 10 # AEM Image Upload
   retry_delay: 1 # AEM Image Upload
@@ -26,7 +26,7 @@ aem_images:
   retry_delay: 1 # Download the cached images from S3
 
 processing_rules:
-  max_depth: 6
+  max_depth: 20
   exclude_selectors:
     - 'div.helper-class'
     - 'span.temporary'
@@ -46,25 +46,32 @@ components:
     selectors: ['div.accordionparagraph']
     property_map:
       title: 'div.accordion-header label, div.accordion-header'
-      content: 'div.accordion-content'
 
   text:
     selectors: ['div.type_paragraph']
     property_map:
-      content: 'self'
+      heading: 'h2'
+      text: 'div.type_paragraph p'
+  
+  parah:
+    selectors: ['p']
+    property_map:
+      text: 'p'
 
   image:
     selectors: ['img']
     property_map:
-      src: 'img[src]'
-      alt: 'img[alt]'
-      width: 'img[width]'
-      height: 'img[height]'
+      src: 'self[src]'
+      alt: 'self[alt]'
+      width: 'self[width]'
+      height: 'self[height]'
+      html: 'self'
 
   table:
-    selectors: ['table']
+    selectors: ['table.cls-tab']
     property_map:
-      html: 'self'
+      heading: 'table caption'
+      html: 'child_html[tfoot]'
 
   video:
     selectors: ['iframe[src*="youtube.com"]']
@@ -77,3 +84,4 @@ resource_types:
   image: '/apps/my-project/components/image'
   table: '/apps/my-project/components/table'
   video: '/apps/my-project/components/video'
+  parah: '/apps/my-project/components/p'

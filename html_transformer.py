@@ -12,6 +12,7 @@ import requests
 import logging
 import time
 import os
+import json
 from typing import Dict, Any, List, Optional, Tuple
 from bs4 import BeautifulSoup, Tag, Comment
 from config_loader import ConfigLoader
@@ -248,8 +249,8 @@ class HTMLComponentTransformer:
         Returns:
             dict: Component hierarchy in AEM JSON format
         """
-        # return self._process_element(self.soup, depth=0)
-        return self.soup
+        return self._process_element(self.soup, depth=0)
+        # return self.soup
 
     def _process_element(
         self, 
@@ -266,14 +267,14 @@ class HTMLComponentTransformer:
         Returns:
             Component JSON structure or None if excluded/over depth
         """
-        # Depth check
-        max_depth = self.processing_rules.get('max_depth', 5)
-        if depth > max_depth:
-            return None
+        # # Depth check
+        # max_depth = self.processing_rules.get('max_depth', 5)
+        # if depth > max_depth:
+        #     return None
 
-        # Check if element should be excluded
-        if self._is_element_excluded(element):
-            return None
+        # # Check if element should be excluded
+        # if self._is_element_excluded(element):
+        #     return None
 
         # Identify component
         component = self._identify_component(element)
@@ -282,9 +283,9 @@ class HTMLComponentTransformer:
 
         # Build component JSON
         component_json = {
-            'componentType': component['name'],
-            'resourceType': self.config.get('resource_types', {}).get(component['name']),
-            'properties': self._extract_properties(element, component),
+            'componentName': component['name'],
+            'sling:resourceType': self.config.get('resource_types', {}).get(component['name']),
+            **self._extract_properties(element, component),
             'children': []
         }
 
@@ -294,6 +295,8 @@ class HTMLComponentTransformer:
                 child_component = self._process_element(child, depth + 1)
                 if child_component:
                     component_json['children'].append(child_component)
+            else:
+                print(f"{element.name} is not a child component")
 
         return component_json
 
@@ -313,7 +316,7 @@ class HTMLComponentTransformer:
             Matched component definition or None
         """
         for name, definition in self.component_definitions.items():
-            if any(element.select(s) for s in definition['selectors']):
+            if any(BeautifulSoup(str(element), 'html.parser').select_one(s) for s in definition['selectors']):
                 return {'name': name, **definition}
         return None
 
@@ -330,43 +333,142 @@ class HTMLComponentTransformer:
         """
         properties = {}
         for prop, selector in component.get('property_map', {}).items():
-            target = element.select_one(selector)
-            if target:
-                if '[' in selector:  # Attribute selector
-                    attr = selector.split('[')[1].split(']')[0].split('=')[0]
-                    properties[prop] = target.get(attr, '')
-                elif target.name in ['img', 'iframe']:  # Media elements
-                    properties[prop] = target.get('src', '')
-                else:  # Text content
-                    properties[prop] = target.get_text(separator=' ', strip=True)
+            if selector.startswith('self['):
+                # Attribute extraction from current element
+                attr_name = selector.split('[', 1)[1].split(']', 1)[0]
+                properties[prop] = element.get(attr_name, '')
+            if selector.startswith('child_html['):
+                # Attribute extraction from child element
+                child_selector = selector.split('[', 1)[1].split(']', 1)[0]
+                child_element = element.select_one(child_selector)
+                properties[prop] = str(child_element)
+            elif selector == 'self':
+                # Full HTML capture
+                properties[prop] = str(element)
+            else:
+                # Existing child element handling
+                target = element.select_one(selector)
+                if target:
+                    if '[' in selector:  # Attribute selector
+                        attr = selector.split('[')[1].split(']')[0].split('=')[0]
+                        properties[prop] = target.get(attr, '')
+                    elif target.name in ['img', 'iframe']:  # Media elements
+                        properties[prop] = target.get('src', '')
+                    else:  # Text content
+                        properties[prop] = target.get_text(separator=' ', strip=True)
         return properties
 
 # Example usage
-# if __name__ == "__main__":
-#     html = '''
-#     <div class="accordionparagraph">
-#         <div class="accordion-header">Main Title</div>
-#         <div class="accordion-body">
-#             <div class="type_paragraph">
-#                 <p>Sample text with <img src="image.jpg" alt="Example"> and
-#                 <iframe src="https://youtube.com/embed/123"></iframe></p>
-#             </div>
-#             <table><tr><td>Data</td></tr></table>
-#         </div>
-#     </div>
-#     '''
+if __name__ == "__main__":
+    html = '''
+    <div class="accordionparagraph">
+        <div class="accordion-header">Main Title</div>
+        <div class="accordion-body">
+            <table class="cls-tab">
+                <caption>
+                    Front-end web developer course 2021
+                </caption>
+                <thead>
+                    <tr>
+                    <th scope="col">Person</th>
+                    <th scope="col">Most interest in</th>
+                    <th scope="col">Age</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                    <th scope="row">Chris</th>
+                    <td>HTML tables</td>
+                    <td>22</td>
+                    </tr>
+                    <tr>
+                    <th scope="row">Dennis</th>
+                    <td>Web accessibility</td>
+                    <td>45</td>
+                    </tr>
+                    <tr>
+                    <th scope="row">Sarah</th>
+                    <td>JavaScript frameworks</td>
+                    <td>29</td>
+                    </tr>
+                    <tr>
+                    <th scope="row">Karen</th>
+                    <td>Web performance</td>
+                    <td>36</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                    <th scope="row" colspan="2">Average age</th>
+                    <td>33</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div class="type_paragraph">
+                <h2>Heading 1</h2>
+                <p>P1Sample text with <img src="image.jpg" alt="Example"> and
+                <iframe src="https://youtube.com/embed/123"></iframe></p>
+            </div>
+            <table>
+                <caption>
+                    Front-end web developer course 2021
+                </caption>
+                <thead>
+                    <tr>
+                    <th scope="col">Person</th>
+                    <th scope="col">Most interest in</th>
+                    <th scope="col">Age</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                    <th scope="row">Chris</th>
+                    <td>HTML tables</td>
+                    <td>22</td>
+                    </tr>
+                    <tr>
+                    <th scope="row">Dennis</th>
+                    <td>Web accessibility</td>
+                    <td>45</td>
+                    </tr>
+                    <tr>
+                    <th scope="row">Sarah</th>
+                    <td>JavaScript frameworks</td>
+                    <td>29</td>
+                    </tr>
+                    <tr>
+                    <th scope="row">Karen</th>
+                    <td>Web performance</td>
+                    <td>36</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                    <th scope="row" colspan="2">Average age</th>
+                    <td>33</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div class="type_paragraph">
+                <h2>Heading 2</h2>
+                <p>P2::Sample text with <img src="image.jpg" alt="Example"> and
+                <iframe src="https://youtube.com/embed/123"></iframe></p>
+            </div>
+        </div>
+    </div>
+    '''
     
-#     transformer = HTMLComponentTransformer(html)
+    transformer = HTMLComponentTransformer(html)
     
-#     # Optional HTML manipulations
-#     transformer.manipulate([
-#         {
-#             'action': 'remove_attributes',
-#             'selector': 'div.accordion-header',
-#             'params': {'attributes': ['data-old-attr']}
-#         }
-#     ])
+    # Optional HTML manipulations
+    # transformer.manipulate([
+    #     {
+    #         'action': 'remove_attributes',
+    #         'selector': 'div.accordion-header',
+    #         'params': {'attributes': ['data-old-attr']}
+    #     }
+    # ])
     
-#     # Generate component JSON
-#     component_json = transformer.to_component_json()
-#     print(json.dumps(component_json, indent=2))
+    # Generate component JSON
+    component_json = transformer.to_component_json()
+    print(json.dumps(component_json, indent=2))
