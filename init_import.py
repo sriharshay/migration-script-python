@@ -36,16 +36,18 @@ def main():
         )
         data = handler.read_data()
         validate_data(data, excel_columns)
-        records = len(data)
         print("\n✅ Excel data validation successful!")
-        print(f"   Found {records} rows")
+        print(f"   Found {len(data)} rows")
+        data = data[:4]
+        records = len(data[:4])
+        print(f"   Process only {records} rows")
         # print(f"   First row sample: {data[:5]}")
     except Exception as e:
         raise SystemExit(f"\n❌ ExcelDataHandler failed: {str(e)}")
     
     # URL Generation Validation
     # print(f"Endpoint template {config.ms.get('endpoint')}")
-    for idx, excel_row in enumerate(data[:5]):
+    for idx, excel_row in enumerate(data):
         try:
             builder = URLBuilder(
                 url_template=config.ms.get('endpoint'),
