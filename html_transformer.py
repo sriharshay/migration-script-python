@@ -42,6 +42,7 @@ class HTMLComponentTransformer:
         self.aem_config = self.config.get('aem', {})
         self.processing_rules = self.config.get('processing_rules', {})
         self.soup = BeautifulSoup(html_markup, 'html.parser')
+        self.enable_img_processng = self.aem_config.get('enable_img_processing', False)
         self._aem_uploader = self._init_aem_uploader()
         self._image_config = self.config.get('aem_images', {})
         self.component_definitions = self.config.get('components', {})
@@ -51,7 +52,7 @@ class HTMLComponentTransformer:
 
     def _init_aem_uploader(self):
         """Initialize AEM upload helper if configured"""
-        if self.aem_config.get('enabled', False):
+        if self.enable_img_processng:
             return AEMUploader()
         return None
 
@@ -87,7 +88,7 @@ class HTMLComponentTransformer:
             }
 
         # Add image processing after basic sanitization
-        if self._aem_uploader:
+        if self._aem_uploader and self.enable_img_processng:
             self._process_and_replace_images(soup)
             
         return soup
