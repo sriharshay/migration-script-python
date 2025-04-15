@@ -69,8 +69,9 @@ def main():
                 processed_response = handler.get_processed_json()
                 # print(f"processed response {processed_response}")
                 try:
+                    endpoint = f"{config.aem.get('base_url')}{config.aem.get('endpoint')}"
                     aem_repsonse = AEMConnector(
-                        endpoint_url=config.aem.get('endpoint'),
+                        endpoint_url=endpoint,
                         username=config.aem.get('username'),
                         password=config.aem.get('password'),
                         payload=processed_response

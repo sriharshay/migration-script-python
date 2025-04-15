@@ -9,11 +9,11 @@ ms:
   retry_delay: 1 # Microservice call
 
 aem:
-  endpoint: "http://localhost:4502/bin/import.json"
+  base_url: http://localhost:4502
+  endpoint: "/bin/import.json"
   username: "admin"
   password: "admin"
   enabled: true
-  base_url: "http://localhost:4502"
   retries: 0 # AEM Image Upload
   timeout: 10 # AEM Image Upload
   retry_delay: 1 # AEM Image Upload
