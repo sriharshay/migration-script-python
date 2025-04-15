@@ -52,7 +52,7 @@ def main():
                 excel_row=excel_row
             )
             url = builder.build_url()
-            print(f"\nProcessing {idx + 1} record out of {records}")
+            print(f"\nProcessing {idx + 1}/{records} page")
             print(f"URL: {url}")
             try:
                 response = ResponseFromMS(
